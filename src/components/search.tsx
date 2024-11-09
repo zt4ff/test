@@ -3,9 +3,15 @@ import { FaSearch } from "react-icons/fa";
 
 interface SearchProps extends React.InputHTMLAttributes<HTMLInputElement> {
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  endAdornments?: () => React.ReactNode;
 }
 
-const Search: FC<SearchProps> = ({ onChange, className, ...props }) => (
+const Search: FC<SearchProps> = ({
+  onChange,
+  className,
+  endAdornments,
+  ...props
+}) => (
   <div
     className={`flex items-center border-[2px] border-[#eef1f5] rounded px-3 py-3 bg-white ${className}`}
   >
@@ -16,6 +22,7 @@ const Search: FC<SearchProps> = ({ onChange, className, ...props }) => (
       onChange={onChange}
       {...props}
     />
+    {endAdornments && endAdornments()}
   </div>
 );
 
