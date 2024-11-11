@@ -28,6 +28,7 @@ export default {
         background: "var(--background)",
         foreground: "var(--foreground)",
         primary: "#64758c",
+        lightblue: "#f8f9fb",
       },
     },
   },

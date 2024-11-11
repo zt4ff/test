@@ -7,11 +7,13 @@ import Search from "@/components/search";
 import { mockRecentSearches, fetchMockData, Asset } from "@/lib/mock";
 import { FaTimes } from "react-icons/fa";
 import AssetCard from "@/components/asset-card";
+import Navbar from "@/components/navbar";
 
 const SEARCH_DELAY = 300;
 
 export default function Home(): JSX.Element {
   const [searchTerm, setSearchTerm] = useState<string>("");
+  const [type, setType] = useState<Asset["type"] | undefined>();
   const [items, setItems] = useState<Asset[]>([]);
   const [page, setPage] = useState<number>(1);
   const [loading, setLoading] = useState<boolean>(false);
@@ -20,11 +22,17 @@ export default function Home(): JSX.Element {
 
   const loadData = async (
     currentPage: number,
-    search: string
+    search: string,
+    assetType: Asset["type"] | undefined
   ): Promise<void> => {
     setLoading(true);
     try {
-      const response = await fetchMockData(currentPage, pageSize, search);
+      const response = await fetchMockData(
+        currentPage,
+        pageSize,
+        search,
+        assetType
+      );
       if (currentPage === 1) {
         setItems(response.data);
       } else {
@@ -37,24 +45,28 @@ export default function Home(): JSX.Element {
     setLoading(false);
   };
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const debouncedSearch = useCallback(
-    debounce((search: string) => {
+    debounce((search: string, assetType: Asset["type"] | undefined) => {
       setPage(1);
-      loadData(1, search);
+      loadData(1, search, assetType);
     }, SEARCH_DELAY),
     []
   );
 
   useEffect(() => {
-    debouncedSearch(searchTerm);
+    setItems([]);
+    setHasMore(false);
+
+    debouncedSearch(searchTerm, type);
     return () => debouncedSearch.cancel();
-  }, [searchTerm, debouncedSearch]);
+  }, [searchTerm, type, debouncedSearch]);
 
   const handleLoadMore = (): void => {
     if (!loading && hasMore) {
       const nextPage = page + 1;
       setPage(nextPage);
-      loadData(nextPage, searchTerm);
+      loadData(nextPage, searchTerm, type);
     }
   };
 
@@ -90,7 +102,6 @@ export default function Home(): JSX.Element {
         }}
       />
 
-      {/* Recent searches */}
       {searchTerm === "" && (
         <div className="mb-6">
           <h3 className="text-sm font-medium text-gray-500 mb-2">
@@ -110,7 +121,12 @@ export default function Home(): JSX.Element {
         </div>
       )}
 
-      {/* Results */}
+      <Navbar
+        onTabChange={(tab) => {
+          setType(tab as Asset["type"]);
+        }}
+      />
+
       <div className="grid grid-cols-2 gap-4 mt-2">
         {items.map((item) => (
           <AssetCard asset={item} key={item.id} />
